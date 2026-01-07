@@ -144,8 +144,31 @@ Content-Type: application/json
 }
 ```
 
-**⚠️ Note sur le Streaming :**
-En mode `stream: true`, l'API renvoie le flux brut de Claude. L'ID de session n'est pas inclus dans ce flux. Le client doit gérer la continuité de la session.
+**✅ Avantage :** Affiche le texte instantanément.
+**⚠️ Attention :** L'ID de session n'est pas renvoyé ici (flux brut).
+
+#### 3. Mode SSE (Server-Sent Events) 🌐
+
+Standard du web pour le streaming d'événements vers le navigateur (`EventSource`).
+
+**Requête :**
+
+```json
+{
+  "prompt": "...",
+  "sse": true,
+  "sessionId": "..."
+}
+```
+
+**Réponse :**
+Content-Type: `text/event-stream`
+
+```text
+data: Voici
+data: un
+data: exemple...
+```
 
 ---
 
