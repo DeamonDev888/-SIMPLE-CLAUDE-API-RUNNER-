@@ -1,0 +1,27 @@
+{
+  "name": "Workflow",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "dist/simple_claude_api.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/simple_claude_api.js",
+    "bot:news": "node dist/start_bot_news.js",
+    "dev": "tsc -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.18.0",
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1"
+  }
+}
