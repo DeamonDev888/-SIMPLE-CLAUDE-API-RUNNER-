@@ -141,13 +141,22 @@ export class SimpleClaudeRunner {
 
                 console.log(`📥 Reçu (Session: ${sessionId || 'Nouvelle'} | Stream: ${stream}): ${prompt.substring(0, 50)}...`);
 
-                if (stream) {
-                    // MODE STREAMING (Texte brut temps réel)
-                    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+                if (stream || req.body.sse) {
+                    // MODE STREAMING (Chunked ou SSE)
+                    const isSSE = !!req.body.sse;
+                    
+                    if (isSSE) {
+                        res.setHeader('Content-Type', 'text/event-stream');
+                        res.setHeader('Cache-Control', 'no-cache');
+                        res.setHeader('Connection', 'keep-alive');
+                    } else {
+                        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+                    }
+                    
                     res.setHeader('Transfer-Encoding', 'chunked');
                     res.setHeader('X-Content-Type-Options', 'nosniff');
                     
-                    await this.executeClaudeStream(prompt, sessionId, res);
+                    await this.executeClaudeStream(prompt, sessionId, res, isSSE);
                 } else {
                     // MODE JSON (Structuré avec Session ID à la fin)
                     const result = await this.executeClaude(prompt, sessionId);
@@ -177,16 +186,15 @@ export class SimpleClaudeRunner {
     /**
      * Exécute Claude en mode Streaming (Pipe stdout -> HTTP Response)
      */
-    public executeClaudeStream(prompt: string, sessionId: string | null, res: Response): Promise<void> {
+    public executeClaudeStream(prompt: string, sessionId: string | null, res: Response, isSSE: boolean = false): Promise<void> {
         return new Promise((resolve, reject) => {
             const { CORE, PERMISSIONS, PATHS } = CONFIG.CLAUDE;
             
+            // ... (setup command)
             const settingsPath = path.resolve(process.cwd(), PATHS.SETTINGS);
             const mcpPath = path.resolve(process.cwd(), PATHS.MCP);
             const safePath = (p: string) => p.includes(' ') ? `"${p}"` : p;
 
-            // EN MODE STREAM : ON ENLÈVE "--output-format json"
-            // On veut le texte brut qui s'affiche petit à petit
             const coreFlags = CORE.replace('--output-format json', '');
 
             let command = `claude ${coreFlags} ${PERMISSIONS} --settings ${safePath(settingsPath)} --mcp-config ${safePath(mcpPath)}`;
@@ -195,7 +203,7 @@ export class SimpleClaudeRunner {
                 command += ` --resume ${sessionId}`;
             }
 
-            console.log(`🚀 Exec (Stream): ${command.substring(0, 100)}...`);
+            console.log(`🚀 Exec (Stream) [SSE:${isSSE}]: ${command.substring(0, 100)}...`);
 
             const child: ChildProcess = spawn(command, [], {
                 stdio: ['pipe', 'pipe', 'pipe'],
@@ -203,9 +211,22 @@ export class SimpleClaudeRunner {
                 shell: true
             });
 
-            // PIPE STDOUT DIRECTEMENT VERS LA RÉPONSE HTTP
+            // PIPE STDOUT
             if (child.stdout) {
-                child.stdout.pipe(res, { end: false }); // On garde le contrôle de la fin
+                child.stdout.on('data', (chunk: Buffer) => {
+                    if (isSSE) {
+                        // Formatage SSE : "data: <contenu>\n\n"
+                        // On encode en base64 ou text, mais Claude renvoie du texte.
+                        // Pour faire simple et robuste aux sauts de ligne :
+                        const lines = chunk.toString().split('\n');
+                        lines.forEach(line => {
+                            if(line) res.write(`data: ${line}\n\n`);
+                        });
+                    } else {
+                        // Raw Stream
+                        res.write(chunk);
+                    }
+                });
             }
 
             if (child.stderr) {
