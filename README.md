@@ -50,7 +50,22 @@ Vous pouvez lancer le serveur en lui indiquant quel profil d'agent charger :
 node dist/simple_claude_api.js --settings "chemins/vers/votre/settings.json"
 ```
 
-### 3. Créer votre propre Agent 🤖
+### 3. Arguments CLI Disponibles ⚙️
+
+Le script `simple_claude_api.js` accepte des arguments pour personnaliser l'exécution :
+
+| Argument                | Description                                                                                                                   | Défaut                            |
+| :---------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :-------------------------------- |
+| `--settings "<path>"`   | **Critique**. Chemin vers le fichier `settings.json` de l'agent. Définit quel agent (et donc quel prompt système) est chargé. | `.claude/settings.json`           |
+| `--mcp-config "<path>"` | Chemin vers la configuration des outils MCP (`.mcp.json`).                                                                    | `../.mcp.json` (Racine du projet) |
+
+**Exemple complet :**
+
+```bash
+node dist/simple_claude_api.js --settings "./mon_agent/settings.json" --mcp-config "./configs/mcp.json"
+```
+
+### 4. Créer votre propre Agent 🤖
 
 Pour créer un nouvel agent (ex: `Agent Code`), il suffit de :
 
