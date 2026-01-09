@@ -1,6 +1,7 @@
 import { FastMCP } from 'fastmcp';
 import { runClaudeAgent, runAgentSchema } from './tools/run_claude.js';
 import { createAgent, createAgentSchema } from './tools/create_agent.js';
+import { createPrompt, createPromptSchema, editPrompt, editPromptSchema } from './tools/manage_prompts.js';
 import { getAgentPrompt } from './prompts/agent_prompts.js';
 import { updateConfig } from './lib/config.js';
 import { fileURLToPath } from 'url';
@@ -25,6 +26,22 @@ export function createServer(name: string = "Claude-Code MCP Runner") {
         description: "Crée un nouvel agent (Prompt + Config) compatible avec ce runner",
         parameters: createAgentSchema,
         execute: createAgent
+    });
+
+    // Outil : Créer un prompt seul
+    server.addTool({
+        name: "create_prompt",
+        description: "Crée ou écrase un fichier prompt Markdown (Persona)",
+        parameters: createPromptSchema,
+        execute: createPrompt
+    });
+
+    // Outil : Éditer un prompt par search/replace (Diff)
+    server.addTool({
+        name: "edit_prompt",
+        description: "Modifie un prompt existant en remplaçant un bloc de texte spécifique",
+        parameters: editPromptSchema,
+        execute: editPrompt
     });
 
     // Prompt : Inspecter la config
