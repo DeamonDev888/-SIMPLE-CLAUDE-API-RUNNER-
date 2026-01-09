@@ -1,5 +1,6 @@
 import { FastMCP } from 'fastmcp';
 import { runClaudeAgent, runAgentSchema } from './tools/run_claude.js';
+import { createAgent, createAgentSchema } from './tools/create_agent.js';
 import { getAgentPrompt } from './prompts/agent_prompts.js';
 import { updateConfig } from './lib/config.js';
 import { fileURLToPath } from 'url';
@@ -14,6 +15,13 @@ export function createServer(name = "Claude-Code MCP Runner") {
         description: "Exécute une commande sur l'agent Claude configuré via CLI",
         parameters: runAgentSchema,
         execute: runClaudeAgent
+    });
+    // Outil : Créer un nouvel agent
+    server.addTool({
+        name: "create_agent",
+        description: "Crée un nouvel agent (Prompt + Config) compatible avec ce runner",
+        parameters: createAgentSchema,
+        execute: createAgent
     });
     // Prompt : Inspecter la config
     server.addPrompt({
