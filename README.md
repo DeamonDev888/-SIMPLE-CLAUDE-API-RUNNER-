@@ -1,31 +1,32 @@
-# 🤖 Simple Claude API Runner
+# 🤖 Claude-Code MCP Runner
 
-![Architecture du projet](architecture_diagram.png)
+![Architecture du projet](assets/banner_project.png)
 
 ## 📋 Présentation
 
-**Simple Claude API Runner** est une passerelle légère et performante (TypeScript/Node.js) qui transforme le CLI **Claude Code** (Anthropic) en une API RESTful universelle.
+**Claude-Code MCP Runner** est un serveur **MCP (Model Context Protocol)** puissant, construit avec **FastMCP** (TypeScript/Node.js). Il agit comme une passerelle universelle permettant à d'autres agents ou interfaces (comme Discord, n8n, ou Claude Desktop) de piloter le CLI **Claude Code** (Anthropic).
 
-Son but est de permettre à n'importe quel système externe (Discord Bot, Script Python, Tâche Cron, Web App) d'interagir avec Claude et ses capacités **MCP** (Model Context Protocol) via de simples requêtes HTTP.
+Son but est d'encapsuler la puissance de l'agent autonome d'Anthropic dans un outil standardisé MCP, utilisable via une simple connexion.
 
-### ✨ Pourquoi cet outil ?
+### ✨ Fonctionnalités Clés
 
-- **🔌 APIfication de Claude** : Plus besoin de lancer des shells complexes. Un simple `POST /run` suffit.
-- **🧠 Multi-Agents** : Configurez autant d'agents que vous voulez (News, Finance, Code, Admin) avec des prompts et outils différents.
-- **⚡ Mode Streaming** : Support natif du flux texte temps réel (comme ChatGPT).
-- **🛠️ Support MCP** : Vos agents peuvent utiliser des outils (Database, Scraping, GitHub...) définis dans vos configurations MCP.
-- **🔒 Non-Interactif** : Conçu pour l'automation serveur (flags `--dangerously-skip-permissions` gérés).
+- **🔌 Outil MCP (`run_agent`)** : Exécutez des prompts complexes sur l'agent Claude via un simple appel d'outil standardisé.
+- **🛠️ Support .mcp.json** : L'agent piloté a lui-même accès à tous vos autres serveurs MCP (PostgreSQL, Scraping, etc.) définis localement.
+- **🧠 Introspection** : Outil de prompt (`inspect_agent_config`) pour vérifier quel agent est chargé et ses directives.
+- **� FastMCP** : Architecture moderne, modulaire et légère, remplaçant l'ancienne API REST.
 
 ---
 
 ## 🏗️ Architecture
 
-Le projet agit comme un orchestrateur :
+![MCP Orchestration Hub](assets/orchestration_hub.png)
 
-1.  **API Server** : Reçoit la requête HTTP (JSON ou Stream).
-2.  **Config Loader** : Charge le profil de l'agent demandé (Prompts, Outils).
-3.  **Claude Process** : Lance une instance isolée de Claude CLI avec le contexte précis.
-4.  **IO Pipe** : Redirige la sortie standard vers la réponse HTTP.
+Le projet utilise **FastMCP** pour exposer des outils via `stdio` :
+
+1.  **MCP Server** : Reçoit la demande d'exécution via le protocole MCP.
+2.  **Config Loader** : Charge dynamiquement le profil de l'agent (`settingsM.json`, `.mcp.json`).
+3.  **Claude Process** : Lance une instance isolée et sécurisée de `claude` (CLI) avec le contexte précis.
+4.  **Feedback Loop** : Capture la sortie JSON structurée de Claude et la retourne comme résultat de l'outil.
 
 ---
 
@@ -34,159 +35,98 @@ Le projet agit comme un orchestrateur :
 ### 1. Installation
 
 ```bash
-# Cloner et installer les dépendances
+# Installer les dépendances
 pnpm install
 
 # Compiler le projet TypeScript
 pnpm build
 ```
 
-### 2. Démarrer le Serveur Générique
+### 2. Configuration
 
-Vous pouvez lancer le serveur en lui indiquant quel profil d'agent charger :
+Pour permettre au runner d'accéder à vos autres serveurs MCP (PostgreSQL, Discord, etc.), dupliquez le fichier d'exemple :
 
 ```bash
-# Exemple générique
-node dist/simple_claude_api.js --settings "chemins/vers/votre/settings.json"
+# Copier le fichier de configuration exemple
+cp .mcp.json.example .mcp.json
 ```
 
-### 3. Arguments CLI Disponibles ⚙️
+Ouvrez ensuite `.mcp.json` et adaptez les chemins d'accès vers vos serveurs locaux si nécessaire.
 
-Le script `simple_claude_api.js` accepte des arguments pour personnaliser l'exécution :
+### 3. Démarrer un Agent (Exemple : Bot News)
 
-| Argument                | Description                                                                                                                   | Défaut                            |
-| :---------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :-------------------------------- |
-| `--settings "<path>"`   | **Critique**. Chemin vers le fichier `settings.json` de l'agent. Définit quel agent (et donc quel prompt système) est chargé. | `.claude/settings.json`           |
-| `--mcp-config "<path>"` | Chemin vers la configuration des outils MCP (`.mcp.json`).                                                                    | `../.mcp.json` (Racine du projet) |
+![Agent News Visual](assets/agent_news_visual.png)
 
-**Exemple complet :**
+Le projet inclut un lanceur dédié pour l'"Agent News" (spécialiste finance).
 
 ```bash
-node dist/simple_claude_api.js --settings "./mon_agent/settings.json" --mcp-config "./configs/mcp.json"
-```
-
-### 4. Créer votre propre Agent 🤖
-
-Pour créer un nouvel agent (ex: `Agent Code`), il suffit de :
-
-1.  Créer un dossier de config (ex: `agent_code/.claude/`).
-2.  Ajouter un `settings.json` définissant l'agent et ses outils MCP.
-3.  Créer le prompt système (ex: `agent_code.md`) expliquant son rôle.
-
-L'API se charge du reste.
-
----
-
-## 📦 Exemple Inclus : "Agent News"
-
-Ce projet est fourni avec un **exemple complet** d'implémentation : l'**Agent News**.
-C'est un agent spécialisé dans l'analyse financière autonome.
-
-- **Rôle** : Analyser les marchés et synthétiser les news financières.
-- **Outils** : Connecté à des serveurs MCP de scraping et une base PostgreSQL.
-- **Prompt** : Défini dans `agent_news/.claude/agents/agent_news.md`.
-
-Pour lancer cet exemple :
-
-```bash
-# Commande raccourcie (voir package.json)
 pnpm bot:news
 ```
 
-![Terminal Preview](terminal_preview.png)
+Cela démarre le serveur MCP sur l'entrée/sortie standard (stdio).
 
----
+### 4. Utilisation avec MCP Inspector
 
-## 📡 Documentation API
+Pour tester votre serveur et ses outils via une interface web graphique :
 
-### Endpoint : `POST /run`
-
-#### 1. Mode Standard (JSON)
-
-Idéal pour les scripts d'automation qui ont besoin de la réponse complète et de l'ID de session.
-
-**Requête :**
-
-```json
-POST http://localhost:3000/run
-Content-Type: application/json
-
-{
-  "prompt": "Analyse les logs ci-joints...",
-  "sessionId": "optional-uuid-to-continue-conversation"
-}
+```bash
+npx @modelcontextprotocol/inspector node dist/start_bot.js
 ```
 
-**Réponse :**
+### 5. Intégration dans Claude Desktop
+
+Ajoutez ce serveur à votre configuration globale Claude Desktop (`claude_desktop_config.json`) pour permettre à Claude de se piloter lui-même (Inception !) :
 
 ```json
 {
-  "type": "result",
-  "result": "Analyse terminée : Aucune erreur critique détectée.",
-  "session_id": "550e8400-e29b-41d4-a716-446655440000"
+  "mcpServers": {
+    "claude-code-runner": {
+      "command": "node",
+      "args": [
+        "C:/Users/Deamon/Desktop/Backup/Serveur MCP/Workflow/dist/index.js"
+      ]
+    }
+  }
 }
-```
-
-#### 2. Mode Streaming (Texte Brut)
-
-Idéal pour les interfaces chat pour afficher la réponse mot à mot.
-
-**Requête :**
-
-```json
-POST http://localhost:3000/run
-Content-Type: application/json
-
-{
-  "prompt": "Raconte-moi une histoire...",
-  "stream": true,
-  "sessionId": "..."
-}
-```
-
-**✅ Avantage :** Affiche le texte instantanément.
-**⚠️ Attention :** L'ID de session n'est pas renvoyé ici (flux brut).
-
-#### 3. Mode SSE (Server-Sent Events) 🌐
-
-Standard du web pour le streaming d'événements vers le navigateur (`EventSource`).
-
-**Requête :**
-
-```json
-{
-  "prompt": "...",
-  "sse": true,
-  "sessionId": "..."
-}
-```
-
-**Réponse :**
-Content-Type: `text/event-stream`
-
-```text
-data: Voici
-data: un
-data: exemple...
 ```
 
 ---
 
-## 📂 Structure Standard
+## � Outils Disponibles
+
+### `run_agent`
+
+L'outil principal pour interagir avec le CLI.
+
+- **prompt** (string): La consigne à donner à l'agent (ex: "Analyse les dernières news ZoneBourse").
+- **sessionId** (string, optionnel): ID pour reprendre une conversation existante.
+- **agentName** (string, optionnel): Tag pour les logs.
+
+### `inspect_agent_config` (Prompt)
+
+Permet de lire la configuration active (settings + prompt système) pour le débogage.
+
+---
+
+## 📂 Structure du Projet
 
 ```text
 Workflow/
-├── dist/                     # Moteur API (Ne pas toucher)
-├── agent_news/               # [EXEMPLE] Dossier d'un Agent
-│   └── .claude/
-│       ├── settingsM.json    # Config de l'agent
-│       └── agents/
-│           └── agent_news.md # Cerveau (Prompt Système)
-├── agent_custom/             # [VOTRE AGENT]
-│   └── ...
+├── assets/                   # Images et ressources graphiques
+├── dist/                     # Code compilé (ESM)
+├── src/
+│   ├── index.ts              # Serveur FastMCP Générique
+│   ├── start_bot.ts          # Lanceur Spécifique (News)
+│   ├── tools/                # Définition des outils (run_claude)
+│   ├── prompts/              # Définition des prompts (inspect)
+│   └── lib/                  # Utilitaires (Config)
+├── .claude/                  # Configuration de l'Agent News
+├── .mcp.json                 # Configuration des sous-serveurs MCP
 └── package.json
 ```
 
+![Terminal Preview](assets/terminal_preview.png)
+
 ---
 
-_Propulsé par Antigravity - 2026_
+_Propulsé par DeaMoN888 - 2026_

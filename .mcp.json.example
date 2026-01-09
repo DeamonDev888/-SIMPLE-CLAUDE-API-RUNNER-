@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "claude-code-runner": {
+      "command": "node",
+      "args": ["C:/Path/To/Workflow/dist/index.js"]
+    },
+    "postgresql": {
+      "command": "node",
+      "args": ["C:/Path/To/serveur_PostGreSQL/dist/index.js"]
+    },
+    "news-server": {
+      "command": "node",
+      "args": ["C:/Path/To/news-server/dist/index.js"]
+    },
+    "discord-server": {
+      "command": "node",
+      "args": ["C:/Path/To/discord-server/dist/index.js"]
+    }
+  }
+}
