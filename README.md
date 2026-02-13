@@ -6,15 +6,14 @@ _Le Pilote Automatique pour vos Agents IA._
 
 ## 👋 C'est quoi ?
 
-Imaginez une télécommande universelle pour **Claude-Code**.
-Ce projet permet à n'importe quelle application (Discord, n8n, KiloCode, Antigravity, ou même un autre Claude-Code) de **commander un Agent IA** sans avoir à utiliser le terminal a partir de MCP(API).
+Imaginez une télécommande universelle pour **Claude-Code** ou pour tout autre CLI. Ce projet permet à n'importe quelle application (Discord, n8n, KiloCode, Antigravity, ou même un autre Claude-Code) de **commander un Agent IA** sans avoir à utiliser le terminal a partir de MCP(API).
 
 C'est une "passerelle" qui transforme le puissant CLI Claude Code en un outil simple à utiliser.
 
 ## ✨ Ce que ça fait
 
 - **🔌 Contrôle Total** : Lancez des missions complexes ("Analyse ces fichiers", "Résume cette page") via une simple commande.
-- **🛠️ Super-Pouvoirs** : L'agent piloté peut utiliser VOS outils (Base de données, Scrapers, etc.).
+- **🛠️ Capacités Étendues** : L'agent piloté peut utiliser VOS outils (Base de données, Scrapers, etc.).
 - **🔗 Compatible** : Fonctionne avec tout client compatible MCP (Claude Desktop, Cursor, etc.).
 - **🤖 Multi-Agents** : Créez, configurez et gérez plusieurs personnalités d'agents facilement. Lancer un pipeline d'agents a partir d'un script.
 
@@ -71,7 +70,7 @@ pnpm bot:news
 
 ### Via un Client MCP (Claude Code, KiloCode, Cline, Antigravity...)
 
-Ajoutez ceci à votre configuration (ex: `claude_desktop_config.json` ou réglages MCP du client) pour donner à votre Agent IA le pouvoir de piloter d'autres agents (Inception !) :
+Ajoutez ceci à votre configuration (ex: `claude_desktop_config.json` ou réglages MCP du client) pour donner à votre Agent IA la capacité de piloter d'autres agents (Inception !) :
 
 ```json
 {
@@ -86,7 +85,11 @@ Ajoutez ceci à votre configuration (ex: `claude_desktop_config.json` ou réglag
 
 Une fois configuré, vous aurez accès à de nouveaux outils. Vous pourrez dire à votre agent :
 
-> _"Crée un nouvel agent 'expert_python' et demande-lui de m'écrire un script Hello World."_
+> _"Crée un nouvel agent 'Chatbot' et demande-lui de se connecter au serveur MCP_Chat_bot pour répondre."_
+
+> _"Crée un nouvel agent 'RAG', connecte-le au serveur MCP_RAG et demande-lui de parcourir la base de données pour lister les 10 clients les plus récents, puis de répondre sur SMS_mcp au numéro 0612345678."_
+
+> _"Crée un nouvel agent 'Discord' et connecte-le au serveur MCP_Discord pour répondre sur le salon #bot."_
 
 ### Les Outils Principaux
 
